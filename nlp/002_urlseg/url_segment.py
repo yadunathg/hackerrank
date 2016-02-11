@@ -15,6 +15,7 @@ def clean(s):
     if s[0] == '#':
         return s[1:]
     else:
+        s = s.replace('www.', '')
         s = s.split('.')
         while len(s) > 1:
             if s[-1].isalpha():
@@ -25,20 +26,24 @@ def clean(s):
 
 
 def getWord(s):
-    try:
-        float(s)
-        return [s]
-    except ValueError:
-        ind = len(s)
-        while ind:
+    ind = len(s)
+    flag = 0
+    while ind:
+        try:
+            float(s[:ind])
+            flag = 1
+        except ValueError:
             if word_dict.get(s[:ind], 0):
-                if len(s[ind:]) == 0:
-                    return [s]
-                seg = getWord(s[ind:])
-                if len(seg):
-                    return [s[:ind]] + seg
-            ind -= 1
-        return []
+                flag = 2
+        if flag:
+            if ind == len(s):
+                return [s]
+            seg = getWord(s[ind:])
+            if len(seg):
+                return [s[:ind]] + seg
+        flag = 0
+        ind -= 1
+    return []
 
 
 def main():
