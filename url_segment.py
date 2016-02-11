@@ -1,45 +1,57 @@
-import re
-words = open('words.txt')
 word_dict = {}
-h = 0
-for w in words:
-    word_dict.update({w.strip(' \n').lower(): h})
-    h += 1
-n = input()
-drop = ['www.', '.com', '.co', '.tx']
-for i in xrange(n):
-    segments = []
-    s = raw_input().lower()
-    if s[0] == '#':
-        s = s[1:]
-    else:
-        try:
-            float(s)
-            print s
-            continue
-        except ValueError:
-            pass
-        if '.' in s:
-            s = '.'.join(s.split('.')[:-1])
-        for d in drop:
-            s = s.replace(d, '')
 
-    ind = len(s)
-    while len(s):
-        if ind == 0:
-            segments.append(s)
-            s = ''
+
+def hash(wordfile):
+    global word_dict
+    words = open(wordfile)
+    h = 1
+    for w in words:
+        word_dict.update({w.strip(' \n').lower(): h})
+        h += 1
+    return word_dict
+
+
+def clean(s):
+    if s[0] == '#':
+        return s[1:]
+    else:
+        s = s.split('.')
+        while len(s) > 1:
+            if s[-1].isalpha():
+                s = s[:-1]
+            else:
+                break
+        return '.'.join(s)
+
+
+def getWord(s):
+    try:
+        float(s)
+        return [s]
+    except ValueError:
+        ind = len(s)
+        while ind:
+            if word_dict.get(s[:ind], 0):
+                if len(s[ind:]) == 0:
+                    return [s]
+                seg = getWord(s[ind:])
+                if len(seg):
+                    return [s[:ind]] + seg
+            ind -= 1
+        return []
+
+
+def main():
+    hash('words.txt')
+    n = input()
+    for i in xrange(n):
+        s = raw_input().lower()
+        s = clean(s)
+        seg = getWord(s)
+        if len(seg):
+            print ' '.join(seg)
         else:
-            try:
-                float(s[:ind])
-                segments.append(s[:ind])
-                s = s[ind:]
-                ind = len(s)
-            except ValueError:
-                if word_dict.get(s[:ind], None) != None:
-                    segments.append(s[:ind])
-                    s = s[ind:]
-                    ind = len(s)
-                else:
-                    ind -= 1
-    print ' '.join(segments)
+            print s
+
+if __name__ == "__main__":
+    main()
